@@ -141,14 +141,13 @@ where
             if status == CobylaStatus::COBYLA_ITERATE as i32 {
                 return TerminationStatus::NotTerminated;
             } else {
-                let cstr = unsafe { std::ffi::CStr::from_ptr(cobyla_reason(status)) };
-                let reason = cstr.to_str().unwrap().to_string();
                 unsafe { cobyla_delete(**ctx as *mut cobyla_context_t) }
-                if reason == "algorithm was successful" {
+                if status == 0 {
                     return TerminationStatus::Terminated(
                         argmin::core::TerminationReason::SolverConverged,
                     );
                 }
+                let reason = cobyla_reason(status).to_string();
                 return TerminationStatus::Terminated(argmin::core::TerminationReason::SolverExit(
                     reason,
                 ));
